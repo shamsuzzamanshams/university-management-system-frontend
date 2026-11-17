@@ -1,0 +1,15 @@
+﻿"use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { GoogleLogin } from "@/components/google-login";
+const schema = z.object({ email: z.string().email("Enter a valid email"), password: z.string().min(8, "Password must be at least 8 characters") });
+type Values = z.infer<typeof schema>;
+export function LoginForm() {
+  const router = useRouter(); const { register, handleSubmit, formState: { errors, isSubmitting }, setError } = useForm<Values>({ resolver: zodResolver(schema) });
+  const submit = async (values: Values) => { try { const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) }); const result = await response.json().catch(() => null); if (!response.ok) { setError("root", { message: result?.message ?? "Sign in failed. Check your credentials." }); return; } router.push("/dashboard"); router.refresh(); } catch { setError("root", { message: "Could not contact the sign-in service. Check your backend connection." }); } };
+  return <div className="w-full max-w-md"><div className="mb-8 text-2xl font-bold lg:hidden">Campus<span className="text-brand">Flow</span></div><h2 className="text-3xl font-bold tracking-tight">Welcome back</h2><p className="mt-2 text-slate-600">Use your university account to continue.</p><form onSubmit={handleSubmit(submit)} className="mt-7 space-y-4" noValidate><label className="block text-sm font-medium">Email<input {...register("email")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-3 outline-none ring-brand focus:ring-2" type="email" autoComplete="email"/>{errors.email&&<span className="mt-1 block text-xs text-red-600">{errors.email.message}</span>}</label><label className="block text-sm font-medium">Password<input {...register("password")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-3 outline-none ring-brand focus:ring-2" type="password" autoComplete="current-password"/>{errors.password&&<span className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}<Link href="/forgot-password" className="mt-1 block text-right text-xs font-semibold text-brand">Forgot password?</Link></label>{errors.root&&<p className="text-sm text-red-600">{errors.root.message}</p>}<Button className="w-full" disabled={isSubmitting}>{isSubmitting?"Signing in…":"Sign in"}</Button></form><div className="my-5 flex items-center gap-3 text-xs text-slate-500 before:h-px before:flex-1 before:bg-slate-200 after:h-px after:flex-1 after:bg-slate-200">OR CONTINUE WITH</div><GoogleLogin/><p className="mt-5 text-center text-sm text-slate-600">New student? <Link href="/register" className="font-semibold text-brand">Create an account</Link></p><p className="mt-3 text-center text-sm text-slate-600">Instructor? <Link href="/apply-instructor" className="font-semibold text-brand">Apply here</Link></p></div>;
+}
