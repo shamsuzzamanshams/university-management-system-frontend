@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, GraduationCap, LayoutDashboard, LogOut, School, UserCircle, Users } from "lucide-react";
+import { Bell, BookOpen, Building2, CalendarDays, ChevronLeft, ChevronRight, ClipboardCheck, CreditCard, GraduationCap, LayoutDashboard, LogOut, School, UserCircle, Users } from "lucide-react";
 import type { AppRole } from "@/lib/utils";
 import { request } from "@/lib/api";
 import { useUiStore } from "@/stores/ui-store";
@@ -22,6 +22,7 @@ export function DashboardShell({ role, children }: { role?: AppRole; children: R
   const router = useRouter();
   const { mobileNavigationOpen, setMobileNavigationOpen } = useUiStore();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   const admin = role === "SUPER_ADMIN" || role === "DEPARTMENT_ADMIN";
   const instructor = role === "INSTRUCTOR";
   const finance = role === "FINANCE_ADMIN" || role === "SUPER_ADMIN";
@@ -66,8 +67,8 @@ export function DashboardShell({ role, children }: { role?: AppRole; children: R
   }, [pathname]);
 
   return <div className="min-h-screen md:flex">
-    <aside className="flex shrink-0 items-center justify-between border-b bg-white p-4 md:fixed md:inset-y-0 md:left-0 md:h-screen md:w-64 md:flex-col md:items-stretch md:overflow-y-auto md:border-b-0 md:border-r">
-      <Link href="/dashboard" className="text-xl font-bold">Campus<span className="text-brand">Flow</span></Link>
+    <aside className={`flex shrink-0 items-center justify-between border-b bg-white p-4 transition-transform duration-300 md:fixed md:inset-y-0 md:left-0 md:h-screen md:w-64 md:flex-col md:items-stretch md:overflow-y-auto md:border-b-0 md:border-r ${sidebarVisible ? "md:translate-x-0" : "md:-translate-x-full"}`}>
+      <div className="flex items-center justify-between"><Link href="/dashboard" className="text-xl font-bold">Uni<span className="text-brand">Nexus</span></Link><button type="button" aria-label="Hide sidebar" title="Hide sidebar" onClick={() => setSidebarVisible(false)} className="hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-ink md:grid"><ChevronLeft size={18}/></button></div>
       <button className="text-sm font-medium md:hidden" onClick={() => setMobileNavigationOpen(!mobileNavigationOpen)}>Menu</button>
       <nav className={`${mobileNavigationOpen ? "absolute left-0 right-0 top-16 z-10 block border-b bg-white p-4 shadow-lg" : "hidden"} max-h-[70vh] space-y-1 overflow-y-auto md:static md:block md:border-0 md:bg-transparent md:p-0 md:shadow-none`}>
         {links.map(({ href, label, icon: Icon }) => <Link onClick={() => setMobileNavigationOpen(false)} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${pathname === href ? "bg-blue-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`} href={href} key={href}>
@@ -76,6 +77,7 @@ export function DashboardShell({ role, children }: { role?: AppRole; children: R
       </nav>
       <div className="hidden items-center gap-3 md:block"><span className="rounded-full bg-mint px-2.5 py-1 text-xs font-bold text-emerald-800">{role?.replaceAll("_", " ") ?? "Member"}</span><button onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); router.refresh(); }} className="ml-2 inline-flex items-center gap-2 text-sm text-slate-600 md:mt-4 md:ml-0"><LogOut size={16}/><span className="hidden md:inline">Sign out</span></button></div>
     </aside>
-    <main className="min-w-0 flex-1 p-5 md:ml-64 md:p-9">{children}</main>
+    {!sidebarVisible && <button type="button" aria-label="Show sidebar" title="Show sidebar" onClick={() => setSidebarVisible(true)} className="fixed left-3 top-3 z-30 hidden size-8 place-items-center rounded-lg border bg-white p-1.5 text-slate-600 shadow-sm hover:bg-slate-50 hover:text-brand md:grid"><ChevronRight size={15}/></button>}
+    <main className={`min-w-0 flex-1 p-5 transition-[margin] duration-300 md:p-9 ${sidebarVisible ? "md:ml-64" : "md:ml-0 md:pt-16"}`}>{children}</main>
   </div>;
 }

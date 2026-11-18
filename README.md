@@ -1,4 +1,4 @@
-﻿# CampusFlow frontend
+# UniNexus frontend
 
 Next.js frontend for the University Management System API. Backend source and API contract were supplied separately in the University-Management-System archive.
 
